@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+set -e
+
+VERSION="1.0.0"
+DEFAULT_BASE_URL="https://henrytran1803.github.io/app-uri-redirect"
+
+# Function to show help message
+show_help() {
+    cat << EOF
+Usage:
+  uri2url [OPTIONS] <uri>
+
+Options:
+  -h, --help        Show this help message
+  -v, --version     Show version
+  -b, --base <url>  Use custom redirect base URL (default: https://henrytran1803.github.io/app-uri-redirect)
+EOF
+}
+
+# Function to show version
+show_version() {
+    echo "uri2url version $VERSION"
+}
+
+# Function to encode URI
+encode_uri() {
+    python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$1"
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -v|--version)
+            show_version
+            exit 0
+            ;;
+        -b|--base)
+            BASE_URL="$2"
+            shift 2
+            ;;
+        *)
+            URI="$1"
+            shift
+            ;;
+    esac
+done
+
+# Check if URI is provided
+if [ -z "$URI" ]; then
+    echo "Error: URI argument is required"
+    show_help
+    exit 1
+fi
+
+# Use default base URL if not specified
+BASE_URL=${BASE_URL:-$DEFAULT_BASE_URL}
+
+# Encode the URI and create the final URL
+ENCODED_URI=$(encode_uri "$URI")
+echo "${BASE_URL}/?target=${ENCODED_URI}" 
